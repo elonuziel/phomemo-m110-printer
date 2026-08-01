@@ -106,6 +106,7 @@
             <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bild" />
             <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="QR / Barcode" />
             <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KI" />
+            <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Galerie" />
         </com.google.android.material.tabs.TabLayout>
 
         <!-- Tab-Inhalte -->
@@ -158,6 +159,18 @@
             <Button android:id="@+id/btnAiGenerate"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:text="Generieren → Vorschau" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/panelGallery"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingTop="10dp" android:visibility="gone">
+            <TextView android:id="@+id/galleryHint"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Noch keine Labels — was du druckst, landet hier. Tippen = in Vorschau laden, langes Tippen = löschen."
+                android:textSize="13sp" />
+            <GridLayout android:id="@+id/gridGallery"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:columnCount="3" android:layout_marginTop="6dp" />
         </LinearLayout>
 
     </LinearLayout>

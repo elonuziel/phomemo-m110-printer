@@ -77,7 +77,8 @@ class MainActivity : AppCompatActivity() {
         offYLabel = findViewById(R.id.offYLabel)
         panels = listOf(
             findViewById(R.id.panelText), findViewById(R.id.panelImage),
-            findViewById(R.id.panelCode), findViewById(R.id.panelAi)
+            findViewById(R.id.panelCode), findViewById(R.id.panelAi),
+            findViewById(R.id.panelGallery)
         )
 
         setupSpinners()
@@ -120,6 +121,44 @@ class MainActivity : AppCompatActivity() {
 
     private fun showPanel(i: Int) {
         panels.forEachIndexed { idx, p -> p.visibility = if (idx == i) View.VISIBLE else View.GONE }
+        if (i == 4) refreshGallery()
+    }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
+
+    private fun refreshGallery() {
+        val grid = findViewById<GridLayout>(R.id.gridGallery)
+        val hint = findViewById<TextView>(R.id.galleryHint)
+        grid.removeAllViews()
+        val files = LabelStore.list(this)
+        hint.visibility = if (files.isEmpty()) View.VISIBLE else View.GONE
+        val cols = 3
+        val size = (resources.displayMetrics.widthPixels - dp(48)) / cols
+        for (f in files) {
+            val thumb = LabelStore.loadThumb(f, 260) ?: continue
+            val iv = ImageView(this)
+            iv.layoutParams = GridLayout.LayoutParams().apply {
+                width = size; height = size; setMargins(dp(3), dp(3), dp(3), dp(3))
+            }
+            iv.scaleType = ImageView.ScaleType.FIT_CENTER
+            iv.setBackgroundColor(0x11888888)
+            iv.setImageBitmap(thumb)
+            iv.setOnClickListener {
+                val full = LabelStore.loadFull(f) ?: return@setOnClickListener
+                currentLabel = full; lastBuilder = null
+                imagePreview.setImageBitmap(full)
+                status.text = "Aus Galerie geladen — DRUCKEN drücken"
+                toast("In Vorschau geladen")
+            }
+            iv.setOnLongClickListener {
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setMessage("Dieses Label aus der Galerie löschen?")
+                    .setPositiveButton("Löschen") { _, _ -> LabelStore.delete(f); refreshGallery() }
+                    .setNegativeButton("Abbrechen", null).show()
+                true
+            }
+            grid.addView(iv)
+        }
     }
 
     private fun setupSpinners() {
@@ -198,7 +237,11 @@ class MainActivity : AppCompatActivity() {
         if (!PhomemoPrinter.isConnected) { toast("Erst verbinden"); settingsPanel.visibility = View.VISIBLE; return }
         status.text = "Drucke…"
         Thread {
-            try { PhomemoPrinter.printBitmap(PhomemoPrinter.applyPrintOffset(bmp)); runOnUiThread { status.text = "✅ Gedruckt" } }
+            try {
+                PhomemoPrinter.printBitmap(PhomemoPrinter.applyPrintOffset(bmp))
+                try { LabelStore.save(this, bmp, System.currentTimeMillis()) } catch (_: Exception) {}
+                runOnUiThread { status.text = "✅ Gedruckt (in Galerie gespeichert)" }
+            }
             catch (e: Exception) { runOnUiThread { status.text = "❌ Druckfehler: ${e.message}" } }
         }.start()
     }
