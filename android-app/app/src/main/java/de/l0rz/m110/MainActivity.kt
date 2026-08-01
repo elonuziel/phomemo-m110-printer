@@ -239,8 +239,8 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
                 PhomemoPrinter.printBitmap(PhomemoPrinter.applyPrintOffset(bmp))
-                try { LabelStore.save(this, bmp, System.currentTimeMillis()) } catch (_: Exception) {}
-                runOnUiThread { status.text = "✅ Gedruckt (in Galerie gespeichert)" }
+                val saved = try { LabelStore.save(this, bmp, System.currentTimeMillis()) } catch (_: Exception) { false }
+                runOnUiThread { status.text = if (saved) "✅ Gedruckt (in Galerie gespeichert)" else "✅ Gedruckt (schon in Galerie)" }
             }
             catch (e: Exception) { runOnUiThread { status.text = "❌ Druckfehler: ${e.message}" } }
         }.start()
