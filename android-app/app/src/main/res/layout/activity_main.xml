@@ -7,147 +7,154 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
-        <TextView
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="@string/app_name" android:textSize="22sp"
-            android:textStyle="bold" android:paddingBottom="12dp" />
-
-        <!-- ===== Drucker / Verbindung ===== -->
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Label-Format:" />
-        <Spinner android:id="@+id/labelSpinner"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
-
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="12dp" android:text="Drucker (gekoppeltes BT-Gerät):" />
-        <Spinner android:id="@+id/deviceSpinner"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" />
-        <Button android:id="@+id/btnConnect"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" android:text="Verbinden" />
-        <TextView android:id="@+id/connStatus"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" android:text="🔴 Nicht verbunden"
-            android:textStyle="bold" android:textSize="15sp" />
-
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:layout_marginVertical="16dp" android:background="#33888888" />
-
-        <!-- ===== Ausrichtung ===== -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:gravity="center_vertical">
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Drehung:" />
-            <Spinner android:id="@+id/rotateSpinner"
-                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                android:layout_marginStart="8dp" />
-            <Button android:id="@+id/btnCenterReset"
+        <!-- ===== Kopfzeile: Titel + Status-Chip (klickbar) ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="0dp" android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name" android:textSize="22sp" android:textStyle="bold" />
+            <TextView android:id="@+id/statusChip"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Reset" android:minWidth="0dp" android:paddingHorizontal="12dp" />
+                android:text="🔴 Nicht verbunden"
+                android:textStyle="bold" android:textSize="13sp"
+                android:background="@drawable/chip_bg"
+                android:paddingHorizontal="14dp" android:paddingVertical="8dp"
+                android:clickable="true" android:focusable="true" />
         </LinearLayout>
-        <TextView android:id="@+id/offXLabel" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:layout_marginTop="4dp"
-            android:text="Versatz ⟷ horizontal: 0 dot" android:textSize="13sp" />
-        <SeekBar android:id="@+id/offXSeek"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:max="160" android:progress="80" />
-        <TextView android:id="@+id/offYLabel" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:text="Versatz ↕ vertikal: 0 dot" android:textSize="13sp" />
-        <SeekBar android:id="@+id/offYSeek"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:max="160" android:progress="80" />
 
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:layout_marginVertical="12dp" android:background="#33888888" />
+        <!-- ===== Einstellungs-Panel (einklappbar) ===== -->
+        <LinearLayout android:id="@+id/settingsPanel"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:layout_marginTop="10dp"
+            android:background="#11888888" android:padding="12dp">
 
-        <!-- ===== Einheitliche Druckvorschau ===== -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Verbindung" android:textStyle="bold" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:text="Label-Format:" android:textSize="13sp" />
+            <Spinner android:id="@+id/labelSpinner"
+                android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="Drucker (gekoppeltes BT-Gerät):" android:textSize="13sp" />
+            <Spinner android:id="@+id/deviceSpinner"
+                android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <Button android:id="@+id/btnConnect"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:text="Verbinden" />
+            <Button android:id="@+id/btnTest"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Test-Label → Vorschau" style="?android:attr/buttonBarButtonStyle" />
+
+            <!-- Ausrichtung -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:text="Ausrichtung" android:textStyle="bold" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Drehung:" />
+                <Spinner android:id="@+id/rotateSpinner"
+                    android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp" />
+                <Button android:id="@+id/btnCenterReset"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Reset" android:minWidth="0dp" android:paddingHorizontal="12dp" />
+            </LinearLayout>
+            <TextView android:id="@+id/offXLabel" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="Versatz ⟷ horizontal: 0 dot" android:textSize="12sp" />
+            <SeekBar android:id="@+id/offXSeek"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:max="160" android:progress="80" />
+            <TextView android:id="@+id/offYLabel" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="Versatz ↕ vertikal: 0 dot" android:textSize="12sp" />
+            <SeekBar android:id="@+id/offYSeek"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:max="160" android:progress="80" />
+        </LinearLayout>
+
+        <!-- ===== Druckvorschau ===== -->
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Druckvorschau (so kommt es raus):" android:textStyle="bold" />
+            android:layout_marginTop="14dp" android:text="Druckvorschau" android:textStyle="bold" />
         <ImageView android:id="@+id/imagePreview"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="6dp" android:adjustViewBounds="true"
-            android:maxHeight="320dp" android:minHeight="120dp" android:scaleType="fitCenter"
+            android:maxHeight="300dp" android:minHeight="110dp" android:scaleType="fitCenter"
             android:background="#11888888" />
         <Button android:id="@+id/btnPrint"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="8dp" android:text="🖨  DRUCKEN"
-            android:textStyle="bold" android:textSize="17sp" />
+            android:layout_marginTop="8dp" android:text="🖨  DRUCKEN" android:textStyle="bold" android:textSize="17sp" />
         <TextView android:id="@+id/status"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" android:text="Inhalt unten wählen → Vorschau → Drucken"
-            android:textSize="14sp" />
+            android:layout_marginTop="6dp" android:text="Inhalt unten wählen → Vorschau → Drucken" android:textSize="13sp" />
 
-        <View android:layout_width="match_parent" android:layout_height="1dp"
-            android:layout_marginVertical="16dp" android:background="#33888888" />
+        <!-- ===== Tabs ===== -->
+        <com.google.android.material.tabs.TabLayout android:id="@+id/tabLayout"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:tabMode="scrollable"
+            xmlns:app="http://schemas.android.com/apk/res-auto">
+            <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text" />
+            <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bild" />
+            <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="QR / Barcode" />
+            <com.google.android.material.tabs.TabItem android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KI" />
+        </com.google.android.material.tabs.TabLayout>
 
-        <!-- ===== Inhalt erzeugen ===== -->
-        <Button android:id="@+id/btnTest"
+        <!-- Tab-Inhalte -->
+        <LinearLayout android:id="@+id/panelText"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Test-Label → Vorschau" />
-
-        <!-- Text -->
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="18dp" android:text="Text" android:textStyle="bold" />
-        <EditText android:id="@+id/textInput"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:hint="Text fürs Label…"
-            android:inputType="textMultiLine" android:minLines="1" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:layout_marginTop="4dp">
-            <Spinner android:id="@+id/textSizeSpinner"
-                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
-            <Spinner android:id="@+id/textAlignSpinner"
-                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
-        </LinearLayout>
-        <Button android:id="@+id/btnBuildText"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" android:text="Text → Vorschau" />
-
-        <!-- Foto / Bild -->
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="18dp" android:text="Foto / Bild" android:textStyle="bold" />
-        <CheckBox android:id="@+id/chkDither"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:checked="true" android:text="Dithering (für Fotos/Graustufen)" />
-        <Button android:id="@+id/btnPickImage"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Bild auswählen → Vorschau" />
-
-        <!-- QR & Barcode -->
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="18dp" android:text="QR-Code / Barcode" android:textStyle="bold" />
-        <EditText android:id="@+id/codeInput"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:hint="Inhalt (URL, Text, Nummer…)"
-            android:inputType="text" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:orientation="horizontal" android:layout_marginTop="4dp">
-            <Button android:id="@+id/btnBuildQr"
-                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                android:text="QR → Vorschau" />
-            <Button android:id="@+id/btnBuildBarcode"
-                android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
-                android:text="Barcode → Vorschau" />
+            android:orientation="vertical" android:paddingTop="10dp">
+            <EditText android:id="@+id/textInput"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:hint="Text fürs Label…" android:inputType="textMultiLine" android:minLines="1" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="4dp">
+                <Spinner android:id="@+id/textSizeSpinner" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+                <Spinner android:id="@+id/textAlignSpinner" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+            </LinearLayout>
+            <Button android:id="@+id/btnBuildText"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:text="Text → Vorschau" />
         </LinearLayout>
 
-        <!-- KI-Piktogramm -->
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="18dp" android:text="KI-Piktogramm" android:textStyle="bold" />
-        <EditText android:id="@+id/aiKeyInput"
+        <LinearLayout android:id="@+id/panelImage"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:hint="OpenAI API-Key (wird gespeichert)"
-            android:inputType="textPassword" />
-        <EditText android:id="@+id/aiPromptInput"
+            android:orientation="vertical" android:paddingTop="10dp" android:visibility="gone">
+            <CheckBox android:id="@+id/chkDither"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:checked="true" android:text="Dithering (für Fotos/Graustufen)" />
+            <Button android:id="@+id/btnPickImage"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="Bild auswählen → Vorschau" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/panelCode"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:hint="Was soll drauf? z.B. „Kaffeetasse“"
-            android:inputType="text" />
-        <Button android:id="@+id/btnAiGenerate"
+            android:orientation="vertical" android:paddingTop="10dp" android:visibility="gone">
+            <EditText android:id="@+id/codeInput"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:hint="Inhalt (URL, Text, Nummer…)" android:inputType="text" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:layout_marginTop="4dp">
+                <Button android:id="@+id/btnBuildQr" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="QR → Vorschau" />
+                <Button android:id="@+id/btnBuildBarcode" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Barcode → Vorschau" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/panelAi"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:text="Generieren → Vorschau" />
+            android:orientation="vertical" android:paddingTop="10dp" android:visibility="gone">
+            <EditText android:id="@+id/aiKeyInput"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:hint="OpenAI API-Key (wird gespeichert)" android:inputType="textPassword" />
+            <EditText android:id="@+id/aiPromptInput"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:hint="Was soll drauf? z.B. „Kaffeetasse“" android:inputType="text" />
+            <Button android:id="@+id/btnAiGenerate"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="Generieren → Vorschau" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

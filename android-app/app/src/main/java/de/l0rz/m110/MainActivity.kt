@@ -16,11 +16,13 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var status: TextView
-    private lateinit var connStatus: TextView
+    private lateinit var statusChip: TextView
+    private lateinit var settingsPanel: View
     private lateinit var deviceSpinner: Spinner
     private lateinit var labelSpinner: Spinner
     private lateinit var textInput: EditText
@@ -36,12 +38,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var offYSeek: SeekBar
     private lateinit var offXLabel: TextView
     private lateinit var offYLabel: TextView
+    private lateinit var panels: List<View>
 
     private var devices: List<BluetoothDevice> = emptyList()
-
-    /** Aktuelles Druckbild (genau das, was der DRUCKEN-Button ausgibt). */
     private var currentLabel: Bitmap? = null
-    /** Reproduziert die aktuelle Vorschau — für Re-Render bei Label-Größen-Wechsel. */
     private var lastBuilder: (() -> Bitmap)? = null
 
     private val prefs by lazy { getSharedPreferences("m110", Context.MODE_PRIVATE) }
@@ -58,7 +58,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         status = findViewById(R.id.status)
-        connStatus = findViewById(R.id.connStatus)
+        statusChip = findViewById(R.id.statusChip)
+        settingsPanel = findViewById(R.id.settingsPanel)
         deviceSpinner = findViewById(R.id.deviceSpinner)
         labelSpinner = findViewById(R.id.labelSpinner)
         textInput = findViewById(R.id.textInput)
@@ -74,10 +75,19 @@ class MainActivity : AppCompatActivity() {
         offYSeek = findViewById(R.id.offYSeek)
         offXLabel = findViewById(R.id.offXLabel)
         offYLabel = findViewById(R.id.offYLabel)
+        panels = listOf(
+            findViewById(R.id.panelText), findViewById(R.id.panelImage),
+            findViewById(R.id.panelCode), findViewById(R.id.panelAi)
+        )
 
         setupSpinners()
         setupAlignment()
+        setupTabs()
 
+        statusChip.setOnClickListener {
+            settingsPanel.visibility =
+                if (settingsPanel.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
         findViewById<Button>(R.id.btnConnect).setOnClickListener { connect(devices.getOrNull(deviceSpinner.selectedItemPosition)) }
         findViewById<Button>(R.id.btnPrint).setOnClickListener { doPrint() }
         findViewById<Button>(R.id.btnTest).setOnClickListener { build { PhomemoPrinter.renderTestLabel() } }
@@ -98,6 +108,20 @@ class MainActivity : AppCompatActivity() {
         ensurePerms()
     }
 
+    private fun setupTabs() {
+        val tabs = findViewById<TabLayout>(R.id.tabLayout)
+        showPanel(0)
+        tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) = showPanel(tab.position)
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
+    }
+
+    private fun showPanel(i: Int) {
+        panels.forEachIndexed { idx, p -> p.visibility = if (idx == i) View.VISIBLE else View.GONE }
+    }
+
     private fun setupSpinners() {
         labelSpinner.adapter = ArrayAdapter(this,
             android.R.layout.simple_spinner_dropdown_item, PhomemoPrinter.LABEL_SIZES.map { it.name })
@@ -106,12 +130,10 @@ class MainActivity : AppCompatActivity() {
         labelSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
                 PhomemoPrinter.labelSize = PhomemoPrinter.LABEL_SIZES[pos]
-                prefs.edit().putInt("label_idx", pos).apply()
-                rebuild()  // Vorschau in neuer Größe neu erzeugen
+                prefs.edit().putInt("label_idx", pos).apply(); rebuild()
             }
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
-
         textSizeSpinner.adapter = ArrayAdapter(this,
             android.R.layout.simple_spinner_dropdown_item, listOf("Auto", "Klein", "Mittel", "Groß"))
         textAlignSpinner.adapter = ArrayAdapter(this,
@@ -132,33 +154,28 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
-
-        // Seekbar 0..160 -> Offset -80..+80 dot (Default = Kopf-Korrektur)
         offXSeek.progress = (prefs.getInt("off_x", PhomemoPrinter.DEFAULT_OFFSET_X) + 80).coerceIn(0, 160)
         offYSeek.progress = (prefs.getInt("off_y", PhomemoPrinter.DEFAULT_OFFSET_Y) + 80).coerceIn(0, 160)
         applyOffsets(save = false)
         val listener = object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) { applyOffsets(save = false) }
             override fun onStartTrackingTouch(s: SeekBar?) {}
-            override fun onStopTrackingTouch(s: SeekBar?) { applyOffsets(save = true); rebuild() }
+            override fun onStopTrackingTouch(s: SeekBar?) { applyOffsets(save = true) }
         }
         offXSeek.setOnSeekBarChangeListener(listener)
         offYSeek.setOnSeekBarChangeListener(listener)
     }
 
     private fun applyOffsets(save: Boolean) {
-        val ox = offXSeek.progress - 80
-        val oy = offYSeek.progress - 80
-        PhomemoPrinter.offsetX = ox
-        PhomemoPrinter.offsetY = oy
+        val ox = offXSeek.progress - 80; val oy = offYSeek.progress - 80
+        PhomemoPrinter.offsetX = ox; PhomemoPrinter.offsetY = oy
         offXLabel.text = "Versatz ⟷ horizontal: $ox dot"
         offYLabel.text = "Versatz ↕ vertikal: $oy dot"
         if (save) prefs.edit().putInt("off_x", ox).putInt("off_y", oy).apply()
     }
 
-    // ---------------------------------------------------------------- Vorschau-Modell
+    // ---------------------------------------------------------------- Vorschau
 
-    /** Baut die Vorschau aus einem Builder, merkt ihn für Re-Render und zeigt das Ergebnis. */
     private fun build(builder: () -> Bitmap) {
         lastBuilder = builder
         status.text = "Erzeuge Vorschau…"
@@ -170,18 +187,15 @@ class MainActivity : AppCompatActivity() {
                     imagePreview.setImageBitmap(bmp)
                     status.text = "Vorschau bereit (${bmp.width}×${bmp.height} px) — DRUCKEN drücken"
                 }
-            } catch (e: Exception) {
-                runOnUiThread { status.text = "❌ Vorschau-Fehler: ${e.message}" }
-            }
+            } catch (e: Exception) { runOnUiThread { status.text = "❌ Vorschau-Fehler: ${e.message}" } }
         }.start()
     }
 
-    /** Erneuert die Vorschau mit dem zuletzt genutzten Builder (z.B. nach Label-/Dither-Wechsel). */
     private fun rebuild() { lastBuilder?.let { build(it) } }
 
     private fun doPrint() {
         val bmp = currentLabel ?: run { toast("Erst eine Vorschau erzeugen"); return }
-        if (!PhomemoPrinter.isConnected) { toast("Erst verbinden"); return }
+        if (!PhomemoPrinter.isConnected) { toast("Erst verbinden"); settingsPanel.visibility = View.VISIBLE; return }
         status.text = "Drucke…"
         Thread {
             try { PhomemoPrinter.printBitmap(PhomemoPrinter.applyPrintOffset(bmp)); runOnUiThread { status.text = "✅ Gedruckt" } }
@@ -189,17 +203,12 @@ class MainActivity : AppCompatActivity() {
         }.start()
     }
 
-    // ---------------------------------------------------------------- Builder pro Inhalt
-
     private fun buildText() {
         val t = textInput.text.toString().trim()
         if (t.isEmpty()) { toast("Bitte Text eingeben"); return }
-        val size = when (textSizeSpinner.selectedItemPosition) {
-            1 -> 34f; 2 -> 52f; 3 -> 76f; else -> 0f
-        }
+        val size = when (textSizeSpinner.selectedItemPosition) { 1 -> 34f; 2 -> 52f; 3 -> 76f; else -> 0f }
         val align = when (textAlignSpinner.selectedItemPosition) {
-            1 -> PhomemoPrinter.Align.LEFT; 2 -> PhomemoPrinter.Align.RIGHT
-            else -> PhomemoPrinter.Align.CENTER
+            1 -> PhomemoPrinter.Align.LEFT; 2 -> PhomemoPrinter.Align.RIGHT; else -> PhomemoPrinter.Align.CENTER
         }
         build { PhomemoPrinter.renderText(t, size, align) }
     }
@@ -229,9 +238,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 val raw = OpenAiImage.generatePictogram(key, prompt)
                 runOnUiThread { build { PhomemoPrinter.renderImage(raw, chkDither.isChecked) } }
-            } catch (e: Exception) {
-                runOnUiThread { status.text = "❌ KI-Fehler: ${e.message}" }
-            }
+            } catch (e: Exception) { runOnUiThread { status.text = "❌ KI-Fehler: ${e.message}" } }
         }.start()
     }
 
@@ -246,64 +253,47 @@ class MainActivity : AppCompatActivity() {
         ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun ensurePerms() {
-        if (hasPerms()) loadDevices() else reqPerms.launch(neededPerms())
-    }
+    private fun ensurePerms() { if (hasPerms()) loadDevices() else reqPerms.launch(neededPerms()) }
 
     private fun loadDevices() {
-        if (!hasPerms()) { connStatus.text = "🔴 Bluetooth-Berechtigung fehlt"; return }
+        if (!hasPerms()) { statusChip.text = "🔴 keine BT-Berechtigung"; return }
         val mgr = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
         val adapter: BluetoothAdapter? = mgr.adapter
-        if (adapter == null || !adapter.isEnabled) { connStatus.text = "🔴 Bluetooth ist aus"; return }
-        try {
-            devices = adapter.bondedDevices.toList()
-        } catch (e: SecurityException) { connStatus.text = "🔴 Keine BT-Berechtigung"; return }
-        val names = devices.map { d ->
-            try { "${d.name ?: "?"} (${d.address})" } catch (e: SecurityException) { d.address }
-        }
+        if (adapter == null || !adapter.isEnabled) { statusChip.text = "🔴 Bluetooth aus"; return }
+        try { devices = adapter.bondedDevices.toList() }
+        catch (e: SecurityException) { statusChip.text = "🔴 keine BT-Berechtigung"; return }
+        val names = devices.map { d -> try { "${d.name ?: "?"} (${d.address})" } catch (e: SecurityException) { d.address } }
         deviceSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item,
             if (names.isEmpty()) listOf("— keine gekoppelten Geräte —") else names)
-
-        // Letztes Gerät bevorzugt, sonst M110/Phomemo automatisch
         val lastAddr = prefs.getString("last_device", null)
-        val idx = when {
-            lastAddr != null -> devices.indexOfFirst { safeAddr(it) == lastAddr }
-            else -> -1
-        }.let { if (it >= 0) it else names.indexOfFirst { n -> n.contains("M110", true) || n.contains("Phomemo", true) } }
+        val idx = (if (lastAddr != null) devices.indexOfFirst { it.address == lastAddr } else -1)
+            .let { if (it >= 0) it else names.indexOfFirst { n -> n.contains("M110", true) || n.contains("Phomemo", true) } }
         if (idx >= 0) deviceSpinner.setSelection(idx)
-
-        // Auto-Connect ans zuletzt genutzte Gerät
-        if (lastAddr != null && !PhomemoPrinter.isConnected) {
-            devices.firstOrNull { safeAddr(it) == lastAddr }?.let {
-                connStatus.text = "🟡 Verbinde automatisch…"
-                connect(it)
-            }
-        }
+        if (lastAddr != null && !PhomemoPrinter.isConnected)
+            devices.firstOrNull { it.address == lastAddr }?.let { connect(it) }
     }
 
     private fun connect(d: BluetoothDevice?) {
         if (d == null) { toast("Erst M110 in den Android-BT-Einstellungen koppeln"); return }
-        connStatus.text = "🟡 Verbinde mit ${safeName(d)}…"
+        statusChip.text = "🟡 verbinde…"
         Thread {
             try {
                 PhomemoPrinter.connect(d)
-                prefs.edit().putString("last_device", safeAddr(d)).apply()
-                runOnUiThread { updateConnStatus() }
+                prefs.edit().putString("last_device", d.address).apply()
+                runOnUiThread { updateConnStatus(); settingsPanel.visibility = View.GONE }
             } catch (e: Exception) {
-                runOnUiThread { connStatus.text = "🔴 Verbindung fehlgeschlagen: ${e.message}" }
+                runOnUiThread { statusChip.text = "🔴 fehlgeschlagen"; settingsPanel.visibility = View.VISIBLE; toast("Verbindung fehlgeschlagen: ${e.message}") }
             }
         }.start()
     }
 
     private fun updateConnStatus() {
-        connStatus.text = if (PhomemoPrinter.isConnected)
-            "🟢 Verbunden mit ${PhomemoPrinter.connectedName ?: "Drucker"}"
-        else "🔴 Nicht verbunden"
+        if (PhomemoPrinter.isConnected) {
+            statusChip.text = "🟢 " + (PhomemoPrinter.connectedName ?: "verbunden")
+        } else {
+            statusChip.text = "🔴 Nicht verbunden"
+        }
     }
-
-    private fun safeName(d: BluetoothDevice) =
-        try { d.name ?: d.address } catch (e: SecurityException) { d.address }
-    private fun safeAddr(d: BluetoothDevice) = d.address
 
     private fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
 
