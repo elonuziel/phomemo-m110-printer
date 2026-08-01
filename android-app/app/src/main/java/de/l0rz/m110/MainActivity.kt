@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity() {
     private fun aiGenerate() {
         val key = aiKeyInput.text.toString().trim()
         val prompt = aiPromptInput.text.toString().trim()
-        if (key.isEmpty()) { toast("OpenAI API-Key eintragen"); return }
+        if (key.isEmpty()) { toast("OpenAI API-Key in den Einstellungen eintragen"); settingsPanel.visibility = View.VISIBLE; return }
         if (prompt.isEmpty()) { toast("Prompt eingeben"); return }
         prefs.edit().putString("openai_key", key).apply()
         status.text = "🎨 Generiere Piktogramm… (~20 s)"
@@ -296,6 +296,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun toast(s: String) = Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
+
+    override fun onPause() {
+        super.onPause()
+        // API-Key einmalig aus den Einstellungen sichern
+        prefs.edit().putString("openai_key", aiKeyInput.text.toString().trim()).apply()
+    }
 
     override fun onDestroy() { super.onDestroy(); PhomemoPrinter.disconnect() }
 }

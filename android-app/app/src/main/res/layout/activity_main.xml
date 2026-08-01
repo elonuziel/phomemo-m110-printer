@@ -72,6 +72,13 @@
                 android:layout_height="wrap_content" android:text="Versatz ↕ vertikal: 0 dot" android:textSize="12sp" />
             <SeekBar android:id="@+id/offYSeek"
                 android:layout_width="match_parent" android:layout_height="wrap_content" android:max="160" android:progress="80" />
+
+            <!-- KI-Key (einmalig) -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:text="KI (OpenAI)" android:textStyle="bold" />
+            <EditText android:id="@+id/aiKeyInput"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:hint="OpenAI API-Key (einmalig eingeben)" android:inputType="textPassword" />
         </LinearLayout>
 
         <!-- ===== Druckvorschau ===== -->
@@ -145,9 +152,6 @@
         <LinearLayout android:id="@+id/panelAi"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:paddingTop="10dp" android:visibility="gone">
-            <EditText android:id="@+id/aiKeyInput"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:hint="OpenAI API-Key (wird gespeichert)" android:inputType="textPassword" />
             <EditText android:id="@+id/aiPromptInput"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginTop="4dp" android:hint="Was soll drauf? z.B. „Kaffeetasse“" android:inputType="text" />
