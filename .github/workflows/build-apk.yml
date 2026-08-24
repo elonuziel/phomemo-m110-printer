@@ -32,7 +32,7 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build debug APK
-        run: gradle assembleDebug
+        run: gradle assembleDebug -PbuildNumber=${{ github.run_number }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
