@@ -17,7 +17,7 @@ object LocaleHelper {
     const val LANG_EN = "en"
 
     fun wrap(context: Context, lang: String): Context {
-        val locale = Locale(lang)
+        val locale = Locale.forLanguageTag(lang)
         Locale.setDefault(locale)
         val config = Configuration(context.resources.configuration)
         config.setLocales(LocaleList(locale))
