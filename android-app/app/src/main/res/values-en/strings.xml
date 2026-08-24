@@ -95,6 +95,12 @@
 
     <!-- Errors -->
     <string name="error_fmt">Error: %1$s</string>
+    <string name="image_decode_error">Image could not be decoded</string>
+
+    <!-- AI prompt / printed test label -->
+    <string name="ai_image_prompt_fmt">Minimalist black-and-white pictogram/icon: %1$s. Clean thick outlines, high contrast, no grayscale, no shadows, white background, centered, for a thermal printer.</string>
+    <string name="test_label_title">M110 OK</string>
+    <string name="test_label_subtitle">Jarvis test print</string>
 
     <!-- Spinner options -->
     <string-array name="text_sizes">

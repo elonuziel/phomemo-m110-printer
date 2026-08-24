@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<Button>(R.id.btnConnect).setOnClickListener { connect(devices.getOrNull(deviceSpinner.selectedItemPosition)) }
         findViewById<Button>(R.id.btnPrint).setOnClickListener { doPrint() }
-        findViewById<Button>(R.id.btnTest).setOnClickListener { build { PhomemoPrinter.renderTestLabel() } }
+        findViewById<Button>(R.id.btnTest).setOnClickListener { build { PhomemoPrinter.renderTestLabel(this@MainActivity) } }
         findViewById<Button>(R.id.btnBuildText).setOnClickListener { buildText() }
         findViewById<Button>(R.id.btnPickImage).setOnClickListener { pickImage.launch("image/*") }
         findViewById<Button>(R.id.btnBuildQr).setOnClickListener { buildCode(qr = true) }
@@ -274,6 +274,12 @@ class MainActivity : AppCompatActivity() {
                     status.text = getString(if (saved) R.string.printed_saved else R.string.printed_duplicate)
                 }
             }
+            catch (e: IllegalStateException) {
+                runOnUiThread {
+                    status.text = getString(R.string.status_not_connected)
+                    toast(getString(R.string.need_connect))
+                }
+            }
             catch (e: Exception) { runOnUiThread { status.text = getString(R.string.print_error, e.message) } }
         }.start()
     }
@@ -311,7 +317,7 @@ class MainActivity : AppCompatActivity() {
         status.text = getString(R.string.generating_ai)
         Thread {
             try {
-                val raw = OpenAiImage.generatePictogram(key, prompt)
+                val raw = OpenAiImage.generatePictogram(this@MainActivity, key, prompt)
                 runOnUiThread { build { PhomemoPrinter.renderImage(raw, chkDither.isChecked) } }
             } catch (e: Exception) { runOnUiThread { status.text = getString(R.string.ai_error, e.message) } }
         }.start()

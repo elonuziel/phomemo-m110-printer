@@ -95,6 +95,12 @@
 
     <!-- Errors -->
     <string name="error_fmt">Fehler: %1$s</string>
+    <string name="image_decode_error">Bild konnte nicht dekodiert werden</string>
+
+    <!-- AI prompt / printed test label -->
+    <string name="ai_image_prompt_fmt">Minimalistisches, schwarz-weißes Piktogramm/Icon: %1$s. Klare dicke Konturen, hoher Kontrast, keine Graustufen, keine Schatten, weißer Hintergrund, zentriert, für einen Thermodrucker.</string>
+    <string name="test_label_title">M110 OK</string>
+    <string name="test_label_subtitle">Jarvis Testdruck</string>
 
     <!-- Spinner options -->
     <string-array name="text_sizes">
