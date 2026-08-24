@@ -27,16 +27,16 @@ object PhomemoPrinter {
     private const val DPI = 203         // Kopf-Auflösung wie Pi-Dienst
 
     /** Label-Format. Der Thermokopf ist fix 384 dot (~48 mm) breit; die Größe steuert v.a. die Höhe. */
-    data class LabelSize(val name: String, val widthMm: Int, val heightMm: Int) {
+    data class LabelSize(val nameRes: Int, val widthMm: Int, val heightMm: Int) {
         fun heightPx(): Int = (heightMm / 25.4 * DPI).toInt()
     }
 
     val LABEL_SIZES = listOf(
-        LabelSize("40 × 30 mm (Standard)", 40, 30),
-        LabelSize("50 × 30 mm", 50, 30),
-        LabelSize("30 × 50 mm (hoch)", 30, 50),
-        LabelSize("50 × 25 mm", 50, 25),
-        LabelSize("25 × 25 mm", 25, 25),
+        LabelSize(R.string.label_40x30, 40, 30),
+        LabelSize(R.string.label_50x30, 50, 30),
+        LabelSize(R.string.label_30x50, 30, 50),
+        LabelSize(R.string.label_50x25, 50, 25),
+        LabelSize(R.string.label_25x25, 25, 25),
     )
 
     /** Aktuell gewähltes Label — bestimmt die feste Render-Höhe aller Label. */
